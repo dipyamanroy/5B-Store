@@ -312,7 +312,71 @@ restoreOverwrittenFilesWithOriginals().then(() => {
     next()
   })
 
-  /* HTTP request logging */
+  // Middleware to parse JSON bodies
+app.use(bodyParser.json());
+
+// Middleware to parse URL-encoded bodies
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Middleware to parse raw bodies
+app.use(bodyParser.raw({ type: 'application/octet-stream' }));
+
+// Middleware to parse text bodies
+app.use(bodyParser.text({ type: 'text/*' }));
+
+// Create a write stream for custom logging
+const customLogStream1 = require('file-stream-rotator').getStream({
+  filename: path.resolve('logs/formatted.log'),
+  frequency: 'daily',
+  verbose: false,
+  max_logs: '2d'
+});
+
+// Custom middleware to log request payload and headers to a file
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const method = req.method;
+    const headers = JSON.stringify(req.headers);
+    const body = (() => {
+      if (req.is('application/json')) return JSON.stringify(req.body);
+      if (req.is('application/x-www-form-urlencoded')) return JSON.stringify(req.body);
+      if (req.is('application/octet-stream')) return req.body.toString('hex');
+      if (req.is('text/*')) return req.body;
+      return '';
+    })();
+    // const headerJSON = JSON.parse(req.headers);
+    // console.log(headerJSON);
+    const logEntry = `URL: ${req.headers.host}, UserAgent: ${req.headers['user-agent']}, Cookie: ${req.headers.cookie}, Payload: ${body}\n`;
+    customLogStream1.write(logEntry);
+    next();
+  });
+
+  // Create a write stream for custom logging
+const customLogStream2 = require('file-stream-rotator').getStream({
+  filename: path.resolve('logs/raw.log'),
+  frequency: 'daily',
+  verbose: false,
+  max_logs: '2d'
+});
+
+// Custom middleware to log request payload and headers to a file
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const method = req.method;
+    const headers = JSON.stringify(req.headers);
+    const body = (() => {
+      if (req.is('application/json')) return JSON.stringify(req.body);
+      if (req.is('application/x-www-form-urlencoded')) return JSON.stringify(req.body);
+      if (req.is('application/octet-stream')) return req.body.toString('hex');
+      if (req.is('text/*')) return req.body;
+      return '';
+    })();
+    // const headerJSON = JSON.parse(req.headers);
+    // console.log(headerJSON);
+    const logEntry = `Method: ${method}, URL: ${req.headers.host}, UserAgent: ${req.headers['user-agent']}, Cookie: ${req.headers.cookie}, Payload: ${body}, ContentType: ${req.headers['content-type']}, ContentLanguage: ${req.headers['content-language']}, Origin: ${req.headers.origin}\n`;
+    customLogStream2.write(logEntry);
+    next();
+  });
+
+  /* HTTP request logging 
   const accessLogStream = require('file-stream-rotator').getStream({
     filename: path.resolve('logs/access.log'),
     frequency: 'daily',
@@ -320,6 +384,7 @@ restoreOverwrittenFilesWithOriginals().then(() => {
     max_logs: '2d'
   })
   app.use(morgan('combined', { stream: accessLogStream }))
+  */
 
   // vuln-code-snippet start resetPasswordMortyChallenge
   /* Rate limiting */
