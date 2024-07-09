@@ -371,7 +371,7 @@ const customLogStream2 = require('file-stream-rotator').getStream({
     })();
     // const headerJSON = JSON.parse(req.headers);
     // console.log(headerJSON);
-    const logEntry = `Method: ${method}, URL: ${req.headers.host}, UserAgent: ${req.headers['user-agent']}, Cookie: ${req.headers.cookie}, Payload: ${body}, ContentType: ${req.headers['content-type']}, ContentLanguage: ${req.headers['content-language']}, Origin: ${req.headers.origin}\n`;
+    const logEntry = `Method: ${method}, URL: ${req.headers.host}, UserAgent: ${req.headers['user-agent']}, Cookie: ${req.headers.cookie}, Payload: ${body}, ContentType: ${req.headers['content-type']}, ContentLanguage: ${req.headers['content-language']}, Origin: ${req.headers.origin}, Authorization: ${req.headers.authorization}\n`;
     customLogStream2.write(logEntry);
     next();
   });
