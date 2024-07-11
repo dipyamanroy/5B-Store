@@ -20,6 +20,7 @@ data/chatbot/*.*
 .nyc_output/
 .sass-cache/
 cache/
+build/
 dist/
 logs/
 vagrant/.vagrant/
